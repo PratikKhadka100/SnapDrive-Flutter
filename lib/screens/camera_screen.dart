@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter/services.dart';
 import 'package:tflite/tflite.dart';
 
 import '../screens/home_screen.dart';
@@ -20,19 +21,29 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   late CameraController controller;
   CameraImage? cameraImage;
-  var output = '';
+  var predictedResult = '';
+
+  var isModalRunning = false;
 
   @override
   void initState() {
     super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+
     loadCamera();
     loadModel();
   }
 
   @override
   void dispose() {
-    controller.dispose();
     super.dispose();
+    controller.dispose();
+    Tflite.close();
   }
 
   void loadCamera() {
@@ -41,13 +52,16 @@ class _CameraScreenState extends State<CameraScreen> {
       if (!mounted) {
         return;
       }
+
       setState(() {
-        // controller.startImageStream(
-        //   (imageStream) {
-        //     cameraImage = imageStream;
-        //     // runModel();
-        //   },
-        // );
+        controller.startImageStream(
+          (imageStream) {
+            cameraImage = imageStream;
+            Future.delayed(const Duration(seconds: 1), () {
+              runModel();
+            });
+          },
+        );
       });
     }).catchError((Object e) {
       if (e is CameraException) {
@@ -113,88 +127,141 @@ class _CameraScreenState extends State<CameraScreen> {
     });
   }
 
-  // void runModel() async {
-  //   if (cameraImage != null) {
-  //     var predictions = await Tflite.runModelOnFrame(
-  //       bytesList: cameraImage!.planes
-  //           .map(
-  //             (e) => e.bytes,
-  //           )
-  //           .toList(),
-  //       imageHeight: cameraImage!.height,
-  //       imageWidth: cameraImage!.width,
-  //       imageMean: 0.0,
-  //       imageStd: 255.0,
-  //       rotation: 90,
-  //       numResults: 2,
-  //       threshold: 0.2,
-  //       asynch: true,
-  //     );
-  //     print('-------------------------');
-  //     print(predictions);
-  //     print('-------------------------');
-  //     // for (var element in predictions!) {
-  //     //   setState(() {
-  //     //     output = element['label'];
-  //     //   });
-  //     // }
-  //   }
-  // }
+  void runModel() {
+    // print('runModel()');
+    // print(isModalRunning);
+    if (isModalRunning) {
+      // print('Modal already running');
+      return;
+    }
+    // print('Modal starts running');
+    isModalRunning = true;
 
-  void runModel(String imagePath) async {
-    print('------------------------------');
-    print('runModel()');
-    print('------------------------------');
-    var recognitions = await Tflite.runModelOnImage(
-      path: imagePath,
-      numResults: 5,
-      imageMean: 0.0,
-      imageStd: 255.0,
-      threshold: 0.2,
-      asynch: true,
-    );
-    print('---------------');
-    print(recognitions);
-    print('---------------');
+    if (cameraImage != null) {
+      Tflite.runModelOnFrame(
+        bytesList: cameraImage!.planes
+            .map(
+              (e) => e.bytes,
+            )
+            .toList(),
+        imageHeight: cameraImage!.height,
+        imageWidth: cameraImage!.width,
+        // imageMean: 0.0,
+        // imageStd: 255.0,
+        // rotation: 90,
+        numResults: 2,
+        // threshold: 0.2,
+        // asynch: true,
+      ).then((prediction) {
+        print('-------------------------');
+        print(prediction);
+        print('-------------------------');
+        for (var predict in prediction!) {
+          setState(() {
+            predictedResult = predict['label'];
+          });
+        }
+        isModalRunning = false;
+      });
+    }
+    // print('Run modal stopped');
   }
 
+  // void runModel(String imagePath) async {
+  //   print('------------------------------');
+  //   print(imagePath);
+  //   print('runModel()');
+  //   print('------------------------------');
+  //   var recognitions = await Tflite.runModelOnImage(
+  //     path: imagePath,
+  //     numResults: 2,
+  //     imageMean: 0.0,
+  //     imageStd: 255.0,
+  //     threshold: 0.2,
+  //     asynch: true,
+  //   );
+  //   print('---------------');
+  //   print(recognitions);
+  //   print('---------------');
+  // }
+
   void loadModel() async {
-    await Tflite.loadModel(
-      model: "assets/detect.tflite",
-      labels: "assets/labelmap.txt",
-      numThreads: 1,
-      isAsset: true,
-      useGpuDelegate: false,
-    );
+    Tflite.close();
+    try {
+      await Tflite.loadModel(
+        model: "assets/detect.tflite",
+        labels: "assets/labelmap.txt",
+      );
+    } on PlatformException {
+      print('---------------Failed to load the model----------------');
+    }
+  }
+
+  void stopModel() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
+    isModalRunning = true;
+    controller.stopImageStream();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
-        elevation: 0,
-      ),
-      body: !controller.value.isInitialized
-          ? const ProgressIndicatorWidget()
-          : SizedBox(
-              width: double.infinity,
-              child: CameraPreview(controller),
+    return WillPopScope(
+      onWillPop: () {
+        showDialog(
+            context: context,
+            builder: (context) {
+              return const ProgressIndicatorWidget();
+            });
+        stopModel();
+        Future.delayed(const Duration(seconds: 3), () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomeScreen(),
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).primaryColor,
-        onPressed: () async {
-          final image = await controller.takePicture();
-          runModel(image.path);
-          // print(image.path);
-        },
-        child: Icon(
-          Icons.camera,
-          color: Theme.of(context).colorScheme.secondary,
-          size: 50,
+          );
+        });
+        return Future.value(false);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).primaryColor,
+          elevation: 0,
         ),
+        body: !controller.value.isInitialized
+            ? const ProgressIndicatorWidget()
+            : SizedBox(
+                width: double.infinity,
+                child: CameraPreview(controller,
+                    child: Column(
+                      children: [
+                        Text(
+                          'Display Prediction Here: $predictedResult',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    )),
+              ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Theme.of(context).primaryColor,
+          onPressed: null,
+          // onPressed: () async {
+          //   final image = await controller.takePicture();
+          //   runModel(image.path);
+          //   // print(image.path);
+          // },
+          child: Icon(
+            Icons.circle_outlined,
+            color: Theme.of(context).colorScheme.secondary,
+            size: 50,
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

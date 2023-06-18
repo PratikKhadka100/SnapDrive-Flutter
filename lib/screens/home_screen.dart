@@ -11,43 +11,45 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(60.0),
-              child: Image.asset('assets/images/logo.png'),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Welcome to Motor Desk',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.start,
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Capture your car image with proper orientation with the help of Artificial Intelligence.',
-                    style: TextStyle(
-                      fontSize: 15,
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Tap on the camera icon below to get started.',
-                    style: TextStyle(
-                      fontSize: 15,
-                    ),
-                  ),
-                ],
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(60.0),
+                child: Image.asset('assets/images/logo.png'),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Welcome to SnapDrive',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.start,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Capture your car image with proper orientation with the help of Artificial Intelligence.',
+                      style: TextStyle(
+                        fontSize: 15,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Tap on the camera icon below to get started.',
+                      style: TextStyle(
+                        fontSize: 15,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
         floatingActionButton: SizedBox(
           height: MediaQuery.of(context).size.height * 0.2,
