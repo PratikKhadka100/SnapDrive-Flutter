@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-import 'camera_screen.dart';
+import './login_screen.dart';
+import './camera_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   static const routeName = '/home-screen';
@@ -14,8 +16,39 @@ class HomeScreen extends StatelessWidget {
         body: SingleChildScrollView(
           child: Column(
             children: [
+              Container(
+                padding: const EdgeInsets.all(11.0),
+                width: double.infinity,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      DateFormat.yMMMEd().format(DateTime.now()),
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.of(context)
+                            .pushReplacementNamed(LoginScreen.routeName);
+                      },
+                      icon: Icon(
+                        Icons.logout_rounded,
+                        color: Theme.of(context).primaryColor,
+                        size: 30,
+                      ),
+                    )
+                  ],
+                ),
+              ),
               Padding(
-                padding: const EdgeInsets.all(60.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 60,
+                  vertical: 30,
+                ),
                 child: Image.asset('assets/images/logo.png'),
               ),
               Padding(
@@ -40,7 +73,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      'Tap on the camera icon below to get started.',
+                      'Tap on the camera icon to get started :)',
                       style: TextStyle(
                         fontSize: 15,
                       ),
@@ -52,7 +85,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         floatingActionButton: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.2,
+          height: MediaQuery.of(context).size.height * 0.1,
           width: MediaQuery.of(context).size.width * 0.2,
           child: FloatingActionButton(
             backgroundColor: Theme.of(context).primaryColor,

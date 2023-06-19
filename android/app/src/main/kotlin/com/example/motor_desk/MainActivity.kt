@@ -1,4 +1,4 @@
-package com.example.motor_desk
+package com.example.snap_drive
 
 import io.flutter.embedding.android.FlutterActivity
 

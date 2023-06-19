@@ -1,6 +1,6 @@
 {
-    "name": "motor_desk",
-    "short_name": "motor_desk",
+    "name": "snap_drive",
+    "short_name": "snap_drive",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

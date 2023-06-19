@@ -47,7 +47,11 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void loadCamera() {
-    controller = CameraController(widget.cameras[0], ResolutionPreset.max);
+    controller = CameraController(
+      widget.cameras[0],
+      ResolutionPreset.max,
+      imageFormatGroup: ImageFormatGroup.yuv420,
+    );
     controller.initialize().then((_) {
       if (!mounted) {
         return;
@@ -57,7 +61,7 @@ class _CameraScreenState extends State<CameraScreen> {
         controller.startImageStream(
           (imageStream) {
             cameraImage = imageStream;
-            Future.delayed(const Duration(seconds: 1), () {
+            Future.delayed(const Duration(seconds: 2), () {
               runModel();
             });
           },
@@ -189,11 +193,18 @@ class _CameraScreenState extends State<CameraScreen> {
     Tflite.close();
     try {
       await Tflite.loadModel(
-        model: "assets/detect.tflite",
-        labels: "assets/labelmap.txt",
+        model: 'assets/vehicle.tflite',
+        labels: 'assets/labels.txt',
       );
     } on PlatformException {
       print('---------------Failed to load the model----------------');
+      showDialog(
+        context: context,
+        builder: (ctx) => const AlertDialog(
+          title: Text('Error Occurred!'),
+          content: Text('Failed to load the model'),
+        ),
+      );
     }
   }
 
@@ -218,7 +229,7 @@ class _CameraScreenState extends State<CameraScreen> {
             });
         stopModel();
         Future.delayed(const Duration(seconds: 3), () {
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) => const HomeScreen(),
@@ -240,7 +251,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     child: Column(
                       children: [
                         Text(
-                          'Display Prediction Here: $predictedResult',
+                          'Prediction: $predictedResult',
                           style: const TextStyle(color: Colors.white),
                         ),
                       ],
