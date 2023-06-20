@@ -26,7 +26,7 @@ class HomeScreen extends StatelessWidget {
                       DateFormat.yMMMEd().format(DateTime.now()),
                       style: TextStyle(
                         color: Theme.of(context).primaryColor,
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -45,11 +45,11 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 60,
-                  vertical: 30,
+                padding: const EdgeInsets.all(25.0),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  child: Image.asset('assets/images/logo.png'),
                 ),
-                child: Image.asset('assets/images/logo.png'),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -59,7 +59,7 @@ class HomeScreen extends StatelessWidget {
                     Text(
                       'Welcome to SnapDrive',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 25,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.start,
@@ -73,7 +73,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      'Tap on the camera icon to get started :)',
+                      'Tap on the camera icon below to get started',
                       style: TextStyle(
                         fontSize: 15,
                       ),

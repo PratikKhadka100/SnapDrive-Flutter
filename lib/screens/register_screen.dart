@@ -1,16 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:form_validator/form_validator.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   static const routeName = '/register-screen';
 
   const RegisterScreen({super.key});
 
   @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final GlobalKey<FormState> _form = GlobalKey<FormState>();
+
+  final nameValidate = ValidationBuilder()
+      .maxLength(30)
+      .required('Required')
+      .regExp(RegExp(r'^[a-zA-Z]+$'), 'Invalid Name')
+      .build();
+  final emailValidate =
+      ValidationBuilder().required('Required').email('Invalid Email').build();
+  final passwordValidate = ValidationBuilder()
+      .minLength(8, 'Password must be at least 8 characters')
+      .required('Required')
+      .build();
+
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+
+  @override
   Widget build(BuildContext context) {
-    final boxDecoration = BoxDecoration(
-      color: Theme.of(context).colorScheme.secondary.withOpacity(0.7),
+    final outlineInputBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide.none,
     );
+
+    final fillColor = Theme.of(context).colorScheme.secondary.withOpacity(0.7);
 
     const textFieldPadding = EdgeInsets.symmetric(horizontal: 26.0);
 
@@ -31,149 +59,162 @@ class RegisterScreen extends StatelessWidget {
           elevation: 0,
         ),
         body: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.55,
-                child: Image.asset('assets/images/key.png'),
-              ),
-              const SizedBox(height: 30),
-              Column(
-                children: const [
-                  Text(
-                    'SnapDrive',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 30,
+          child: Form(
+            key: _form,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.55,
+                  child: Image.asset('assets/images/key.png'),
+                ),
+                const SizedBox(height: 30),
+                Column(
+                  children: const [
+                    Text(
+                      'SnapDrive',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Join the SnapDrive Community!',
-                    style: TextStyle(
-                      fontSize: 16,
+                    Text(
+                      'Join the SnapDrive Community!',
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              Padding(
-                padding: textFieldPadding,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: boxDecoration,
+                  ],
+                ),
+                const SizedBox(height: 30),
+                Padding(
+                  padding: textFieldPadding,
                   child: TextFormField(
                     cursorColor: Theme.of(context).primaryColor,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.person_2_rounded),
+                    decoration: InputDecoration(
+                      border: outlineInputBorder,
+                      fillColor: fillColor,
+                      filled: true,
+                      prefixIcon: const Icon(Icons.person_2_rounded),
                       prefixIconColor: Colors.black,
                       hintText: 'First Name',
-                      border: InputBorder.none,
                     ),
+                    controller: firstNameController,
+                    validator: nameValidate,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: textFieldPadding,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: boxDecoration,
+                const SizedBox(height: 20),
+                Padding(
+                  padding: textFieldPadding,
                   child: TextFormField(
                     cursorColor: Theme.of(context).primaryColor,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
+                      border: outlineInputBorder,
+                      fillColor: fillColor,
+                      filled: true,
                       prefixIcon: Icon(Icons.person_2_rounded),
                       prefixIconColor: Colors.black,
                       hintText: 'Last Name',
-                      border: InputBorder.none,
                     ),
+                    controller: lastNameController,
+                    validator: nameValidate,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: textFieldPadding,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: boxDecoration,
+                const SizedBox(height: 20),
+                Padding(
+                  padding: textFieldPadding,
                   child: TextFormField(
                     keyboardType: TextInputType.emailAddress,
                     cursorColor: Theme.of(context).primaryColor,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.email_rounded),
+                    decoration: InputDecoration(
+                      border: outlineInputBorder,
+                      fillColor: fillColor,
+                      filled: true,
+                      prefixIcon: const Icon(Icons.email_rounded),
                       prefixIconColor: Colors.black,
                       hintText: 'Email',
-                      border: InputBorder.none,
                     ),
+                    controller: emailController,
+                    validator: emailValidate,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: textFieldPadding,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: boxDecoration,
+                const SizedBox(height: 20),
+                Padding(
+                  padding: textFieldPadding,
                   child: TextFormField(
                     cursorColor: Theme.of(context).primaryColor,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.lock_rounded),
+                    decoration: InputDecoration(
+                      border: outlineInputBorder,
+                      fillColor: fillColor,
+                      filled: true,
+                      prefixIcon: const Icon(Icons.lock_rounded),
                       prefixIconColor: Colors.black,
                       hintText: 'Password',
-                      border: InputBorder.none,
                     ),
+                    controller: passwordController,
+                    validator: passwordValidate,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: textFieldPadding,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: boxDecoration,
+                const SizedBox(height: 20),
+                Padding(
+                  padding: textFieldPadding,
                   child: TextFormField(
                     cursorColor: Theme.of(context).primaryColor,
                     obscureText: true,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.lock_rounded),
+                    decoration: InputDecoration(
+                      border: outlineInputBorder,
+                      fillColor: fillColor,
+                      filled: true,
+                      prefixIcon: const Icon(Icons.lock_rounded),
                       prefixIconColor: Colors.black,
                       hintText: 'Confirm Password',
-                      border: InputBorder.none,
                     ),
+                    controller: confirmPasswordController,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'The field is required';
+                      }
+                      if (value != passwordController.text) {
+                        return 'Password doesn\'t match';
+                      }
+                      return null;
+                    },
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 26,
-                  right: 26,
-                  bottom: 20,
-                ),
-                child: InkWell(
-                  onTap: () {},
-                  borderRadius: BorderRadius.circular(8),
-                  overlayColor: MaterialStateProperty.all(Colors.blue),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withAlpha(240),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'Register',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 26,
+                    right: 26,
+                    bottom: 20,
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      if (_form.currentState!.validate()) {}
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    overlayColor: MaterialStateProperty.all(Colors.blue),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor.withAlpha(240),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Register',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -22,18 +22,13 @@ class _CameraScreenState extends State<CameraScreen> {
   late CameraController controller;
   CameraImage? cameraImage;
   var predictedResult = '';
+  var predictedConfidence = '';
 
   var isModalRunning = false;
 
   @override
   void initState() {
     super.initState();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
 
     loadCamera();
     loadModel();
@@ -50,7 +45,7 @@ class _CameraScreenState extends State<CameraScreen> {
     controller = CameraController(
       widget.cameras[0],
       ResolutionPreset.max,
-      imageFormatGroup: ImageFormatGroup.yuv420,
+      // imageFormatGroup: ImageFormatGroup.yuv420,
     );
     controller.initialize().then((_) {
       if (!mounted) {
@@ -78,7 +73,8 @@ class _CameraScreenState extends State<CameraScreen> {
               builder: (ctx) => AlertDialog(
                 title: const Text('Camera Access Denied'),
                 content: const Text(
-                    'Please allow camera access in the device settings.'),
+                  'Please allow camera access in the device settings.',
+                ),
                 actions: [
                   MaterialButton(
                     color: Theme.of(ctx).primaryColor,
@@ -106,7 +102,8 @@ class _CameraScreenState extends State<CameraScreen> {
               builder: (ctx) => AlertDialog(
                 title: const Text('Error!'),
                 content: const Text(
-                    'An error occurred while initializing the camera.'),
+                  'An error occurred while initializing the camera.',
+                ),
                 actions: [
                   MaterialButton(
                     color: Theme.of(ctx).primaryColor,
@@ -142,29 +139,41 @@ class _CameraScreenState extends State<CameraScreen> {
     isModalRunning = true;
 
     if (cameraImage != null) {
-      Tflite.runModelOnFrame(
+      // Tflite.runModelOnFrame(
+      Tflite.detectObjectOnFrame(
         bytesList: cameraImage!.planes
             .map(
               (e) => e.bytes,
             )
             .toList(),
+        model: 'YOLO',
         imageHeight: cameraImage!.height,
         imageWidth: cameraImage!.width,
         // imageMean: 0.0,
         // imageStd: 255.0,
         // rotation: 90,
-        numResults: 2,
-        // threshold: 0.2,
+        // numResults: 2,
+        threshold: 0.2,
         // asynch: true,
       ).then((prediction) {
         print('-------------------------');
         print(prediction);
         print('-------------------------');
-        for (var predict in prediction!) {
-          setState(() {
-            predictedResult = predict['label'];
-          });
-        }
+        // for (var predict in prediction!) {
+        setState(() {
+          // predictedResult = predict['label'];
+          if (prediction!.isEmpty) {
+            predictedResult = '';
+            predictedConfidence = '';
+
+            return;
+          }
+          predictedResult = prediction[0]['detectedClass'];
+          predictedConfidence = ((prediction[0]['confidenceInClass'] as double)
+              .toStringAsFixed(2)
+              .toString());
+        });
+        // }
         isModalRunning = false;
       });
     }
@@ -193,11 +202,13 @@ class _CameraScreenState extends State<CameraScreen> {
     Tflite.close();
     try {
       await Tflite.loadModel(
-        model: 'assets/vehicle.tflite',
-        labels: 'assets/labels.txt',
+        // model: 'assets/ssd_mobilenet.tflite',
+        // labels: 'assets/ssd_mobilenet.txt',
+        model: 'assets/yolov2_tiny.tflite',
+        labels: 'assets/yolov2_tiny.txt',
       );
     } on PlatformException {
-      print('---------------Failed to load the model----------------');
+      // print('---------------Failed to load the model----------------');
       showDialog(
         context: context,
         builder: (ctx) => const AlertDialog(
@@ -209,11 +220,6 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void stopModel() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-
     isModalRunning = true;
     controller.stopImageStream();
   }
@@ -240,38 +246,63 @@ class _CameraScreenState extends State<CameraScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: Colors.black,
           elevation: 0,
         ),
         body: !controller.value.isInitialized
             ? const ProgressIndicatorWidget()
-            : SizedBox(
-                width: double.infinity,
-                child: CameraPreview(controller,
-                    child: Column(
-                      children: [
-                        Text(
-                          'Prediction: $predictedResult',
-                          style: const TextStyle(color: Colors.white),
+            : Column(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.75,
+                    width: double.infinity,
+                    child: CameraPreview(
+                      controller,
+                      child: Column(
+                        children: [
+                          Text(
+                            'Object: $predictedResult',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          Text(
+                            'Confidence: $predictedConfidence',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: double.infinity,
+                      width: double.infinity,
+                      color: Colors.black,
+                      child: IconButton(
+                        onPressed: () {},
+                        icon: const Icon(
+                          Icons.camera,
+                          color: Colors.white,
+                          size: 65,
                         ),
-                      ],
-                    )),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Theme.of(context).primaryColor,
-          onPressed: null,
-          // onPressed: () async {
-          //   final image = await controller.takePicture();
-          //   runModel(image.path);
-          //   // print(image.path);
-          // },
-          child: Icon(
-            Icons.circle_outlined,
-            color: Theme.of(context).colorScheme.secondary,
-            size: 50,
-          ),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        // floatingActionButton: FloatingActionButton(
+        //   backgroundColor: Colors.black,
+        //   onPressed: () {},
+        //   // onPressed: () async {
+        //   //   final image = await controller.takePicture();
+        //   //   runModel(image.path);
+        //   //   // print(image.path);
+        //   // },
+        //   child: Icon(
+        //     Icons.camera,
+        //     size: MediaQuery.of(context).size.width * 0.15,
+        //   ),
+        // ),
+        // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       ),
     );
   }
