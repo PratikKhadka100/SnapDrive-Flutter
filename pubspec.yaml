@@ -67,8 +67,8 @@ flutter:
     - assets/images/
     - assets/ssd_mobilenet.txt
     - assets/ssd_mobilenet.tflite
-    - assets/yolov2_tiny.txt
-    - assets/yolov2_tiny.tflite
+    - assets/orientation.tflite
+    - assets/orientation.txt
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

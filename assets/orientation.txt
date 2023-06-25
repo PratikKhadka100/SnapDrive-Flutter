@@ -1,0 +1,10 @@
+back
+backRight
+driverSeat
+front
+frontLeft
+left
+leftBack
+right
+rightFront
+speedometer

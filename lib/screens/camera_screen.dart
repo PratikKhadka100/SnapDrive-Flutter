@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
@@ -5,7 +7,10 @@ import 'package:tflite/tflite.dart';
 
 import '../screens/home_screen.dart';
 import '../screens/splash_screen.dart';
+import './orientation_screen.dart';
+// import '../widgets/prediction_item_widget.dart';
 import '../widgets/progress_indicator_widget.dart';
+import '../widgets/prediction_box_widget.dart';
 
 class CameraScreen extends StatefulWidget {
   static const routeName = '/camera-screen';
@@ -21,8 +26,13 @@ class CameraScreen extends StatefulWidget {
 class _CameraScreenState extends State<CameraScreen> {
   late CameraController controller;
   CameraImage? cameraImage;
-  var predictedResult = '';
+  var predictedLabel = '';
   var predictedConfidence = '';
+  Rect? detectedObjectRect;
+
+  List<dynamic> predictionList = [];
+
+  var isCar = false;
 
   var isModalRunning = false;
 
@@ -56,9 +66,7 @@ class _CameraScreenState extends State<CameraScreen> {
         controller.startImageStream(
           (imageStream) {
             cameraImage = imageStream;
-            Future.delayed(const Duration(seconds: 2), () {
-              runModel();
-            });
+            runModel();
           },
         );
       });
@@ -129,13 +137,10 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void runModel() {
-    // print('runModel()');
-    // print(isModalRunning);
     if (isModalRunning) {
-      // print('Modal already running');
       return;
     }
-    // print('Modal starts running');
+
     isModalRunning = true;
 
     if (cameraImage != null) {
@@ -146,14 +151,14 @@ class _CameraScreenState extends State<CameraScreen> {
               (e) => e.bytes,
             )
             .toList(),
-        model: 'YOLO',
+        model: 'SSDMobileNet',
         imageHeight: cameraImage!.height,
         imageWidth: cameraImage!.width,
         // imageMean: 0.0,
         // imageStd: 255.0,
         // rotation: 90,
         // numResults: 2,
-        threshold: 0.2,
+        threshold: 0.5,
         // asynch: true,
       ).then((prediction) {
         print('-------------------------');
@@ -163,52 +168,54 @@ class _CameraScreenState extends State<CameraScreen> {
         setState(() {
           // predictedResult = predict['label'];
           if (prediction!.isEmpty) {
-            predictedResult = '';
+            predictedLabel = '';
             predictedConfidence = '';
 
             return;
           }
-          predictedResult = prediction[0]['detectedClass'];
-          predictedConfidence = ((prediction[0]['confidenceInClass'] as double)
-              .toStringAsFixed(2)
-              .toString());
+
+          predictionList = prediction;
+
+          predictedLabel = prediction[0]['detectedClass'];
+
+          if (predictedLabel == 'car') {
+            setState(() {
+              isCar = true;
+            });
+          } else {
+            setState(() {
+              isCar = false;
+            });
+          }
+          // predictedConfidence =
+          //     ((prediction[0]['confidenceInClass'] * 100 as double)
+          //         .toStringAsFixed(0)
+          //         .toString());
+          // detectedObjectRect = Rect.fromLTRB(
+          //   prediction[0]['rect']['x'] * controller.value.previewSize!.width,
+          //   prediction[0]['rect']['y'] * controller.value.previewSize!.height,
+          //   (prediction[0]['rect']['x'] + prediction[0]['rect']['w']) *
+          //       controller.value.previewSize!.width,
+          //   (prediction[0]['rect']['y'] + prediction[0]['rect']['h']) *
+          //       controller.value.previewSize!.height,
+          // );
         });
         // }
         isModalRunning = false;
       });
     }
-    // print('Run modal stopped');
   }
-
-  // void runModel(String imagePath) async {
-  //   print('------------------------------');
-  //   print(imagePath);
-  //   print('runModel()');
-  //   print('------------------------------');
-  //   var recognitions = await Tflite.runModelOnImage(
-  //     path: imagePath,
-  //     numResults: 2,
-  //     imageMean: 0.0,
-  //     imageStd: 255.0,
-  //     threshold: 0.2,
-  //     asynch: true,
-  //   );
-  //   print('---------------');
-  //   print(recognitions);
-  //   print('---------------');
-  // }
 
   void loadModel() async {
     Tflite.close();
     try {
       await Tflite.loadModel(
-        // model: 'assets/ssd_mobilenet.tflite',
-        // labels: 'assets/ssd_mobilenet.txt',
-        model: 'assets/yolov2_tiny.tflite',
-        labels: 'assets/yolov2_tiny.txt',
+        // model: 'assets/orientation.tflite',
+        // labels: 'assets/orientation.txt',
+        model: 'assets/ssd_mobilenet.tflite',
+        labels: 'assets/ssd_mobilenet.txt',
       );
     } on PlatformException {
-      // print('---------------Failed to load the model----------------');
       showDialog(
         context: context,
         builder: (ctx) => const AlertDialog(
@@ -226,6 +233,8 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Size screen = MediaQuery.of(context).size;
+
     return WillPopScope(
       onWillPop: () {
         showDialog(
@@ -244,65 +253,87 @@ class _CameraScreenState extends State<CameraScreen> {
         });
         return Future.value(false);
       },
-      child: Scaffold(
-        appBar: AppBar(
+      child: SafeArea(
+        child: Scaffold(
           backgroundColor: Colors.black,
-          elevation: 0,
-        ),
-        body: !controller.value.isInitialized
-            ? const ProgressIndicatorWidget()
-            : Column(
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.75,
-                    width: double.infinity,
-                    child: CameraPreview(
-                      controller,
-                      child: Column(
-                        children: [
-                          Text(
-                            'Object: $predictedResult',
-                            style: const TextStyle(color: Colors.white),
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            elevation: 0,
+          ),
+          body: !controller.value.isInitialized
+              ? const ProgressIndicatorWidget()
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.75,
+                        width: MediaQuery.of(context).size.width,
+                        child: AspectRatio(
+                          aspectRatio: controller.value.aspectRatio,
+                          child: CameraPreview(
+                            controller,
+                            child: PredictionBoxWidget(
+                              results: predictionList,
+                              previewH: math.max(
+                                controller.value.previewSize!.height,
+                                controller.value.previewSize!.width,
+                              ),
+                              previewW: math.min(
+                                controller.value.previewSize!.height,
+                                controller.value.previewSize!.width,
+                              ),
+                              screenH: screen.height * 0.75,
+                              screenW: screen.width,
+                            ),
+                            // child: PredictionItemWidget(
+                            //   predictedLabel: predictedLabel,
+                            //   predictedConfidence: predictedConfidence,
+                            //   detectedObjectRect: detectedObjectRect,
+                            // ),
                           ),
-                          Text(
-                            'Confidence: $predictedConfidence',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: double.infinity,
-                      width: double.infinity,
-                      color: Colors.black,
-                      child: IconButton(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.camera,
-                          color: Colors.white,
-                          size: 65,
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-        // floatingActionButton: FloatingActionButton(
-        //   backgroundColor: Colors.black,
-        //   onPressed: () {},
-        //   // onPressed: () async {
-        //   //   final image = await controller.takePicture();
-        //   //   runModel(image.path);
-        //   //   // print(image.path);
-        //   // },
-        //   child: Icon(
-        //     Icons.camera,
-        //     size: MediaQuery.of(context).size.width * 0.15,
-        //   ),
-        // ),
-        // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        color: Colors.black,
+                        child: isCar
+                            ? IconButton(
+                                onPressed: () {
+                                  showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return const ProgressIndicatorWidget();
+                                      });
+                                  stopModel();
+                                  Future.delayed(const Duration(seconds: 5),
+                                      () {
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => OrientationScreen(
+                                          cameras: widget.cameras,
+                                          controller: controller,
+                                          cameraImage: cameraImage,
+                                        ),
+                                      ),
+                                    );
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.arrow_circle_right_rounded,
+                                  color: Colors.white,
+                                  size: 55,
+                                ),
+                              )
+                            : Container(),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
       ),
     );
   }

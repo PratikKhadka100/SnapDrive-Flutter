@@ -11,6 +11,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
@@ -47,7 +49,7 @@ class HomeScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(25.0),
                 child: SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.6,
+                  width: mediaQuery.size.width * 0.6,
                   child: Image.asset('assets/images/logo.png'),
                 ),
               ),
@@ -85,8 +87,8 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         floatingActionButton: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.1,
-          width: MediaQuery.of(context).size.width * 0.2,
+          height: mediaQuery.size.height * 0.1,
+          width: mediaQuery.size.width * 0.2,
           child: FloatingActionButton(
             backgroundColor: Theme.of(context).primaryColor,
             onPressed: () {

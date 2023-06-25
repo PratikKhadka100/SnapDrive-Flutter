@@ -23,28 +23,30 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.5,
-            child: Image.asset(
-              'assets/images/logo.png',
-              fit: BoxFit.cover,
+    return SafeArea(
+      child: Scaffold(
+        body: Center(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.5,
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 100.0),
-            child: LinearProgressIndicator(
-              color: Theme.of(context).colorScheme.secondary,
-              backgroundColor: Theme.of(context).primaryColor,
-            ),
-          )
-        ],
-      )),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 100.0),
+              child: LinearProgressIndicator(
+                color: Theme.of(context).colorScheme.secondary,
+                backgroundColor: Theme.of(context).primaryColor,
+              ),
+            )
+          ],
+        )),
+      ),
     );
   }
 }

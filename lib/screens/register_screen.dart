@@ -11,7 +11,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final GlobalKey<FormState> _form = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final nameValidate = ValidationBuilder()
       .maxLength(30)
@@ -60,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         body: SingleChildScrollView(
           child: Form(
-            key: _form,
+            key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
@@ -191,7 +191,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   child: InkWell(
                     onTap: () {
-                      if (_form.currentState!.validate()) {}
+                      if (_formKey.currentState!.validate()) {}
                     },
                     borderRadius: BorderRadius.circular(8),
                     overlayColor: MaterialStateProperty.all(Colors.blue),

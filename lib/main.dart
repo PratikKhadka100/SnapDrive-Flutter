@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import './screens/splash_screen.dart';
 import './screens/home_screen.dart';
 import './screens/camera_screen.dart';
+// import './screens/orientation_screen.dart';
 import './screens/login_screen.dart';
 import './screens/register_screen.dart';
 
@@ -40,7 +41,9 @@ class MyApp extends StatelessWidget {
         LoginScreen.routeName: (ctx) => const LoginScreen(),
         RegisterScreen.routeName: (ctx) => const RegisterScreen(),
         HomeScreen.routeName: (ctx) => const HomeScreen(),
-        CameraScreen.routeName: (ctx) => CameraScreen(cameras: cameras)
+        CameraScreen.routeName: (ctx) => CameraScreen(cameras: cameras),
+        // OrientationScreen.routeName: (ctx) =>
+        //     OrientationScreen(cameras: cameras)
       },
     );
   }
