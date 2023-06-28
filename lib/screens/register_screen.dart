@@ -112,7 +112,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       border: outlineInputBorder,
                       fillColor: fillColor,
                       filled: true,
-                      prefixIcon: Icon(Icons.person_2_rounded),
+                      prefixIcon: const Icon(Icons.person_2_rounded),
                       prefixIconColor: Colors.black,
                       hintText: 'Last Name',
                     ),

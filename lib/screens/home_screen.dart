@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 
 import './login_screen.dart';
 import './camera_screen.dart';
+import './orientation_screen.dart';
+import '../utils/snackbar_utils.dart';
+import '../utils/custom_colors.dart';
 
 class HomeScreen extends StatelessWidget {
   static const routeName = '/home-screen';
@@ -34,11 +37,57 @@ class HomeScreen extends StatelessWidget {
                     ),
                     IconButton(
                       onPressed: () {
-                        Navigator.of(context)
-                            .pushReplacementNamed(LoginScreen.routeName);
+                        showDialog(
+                            barrierDismissible: false,
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                                  content:
+                                      const Text('Logout of your account?'),
+                                  actions: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        MaterialButton(
+                                          color: Theme.of(ctx)
+                                              .colorScheme
+                                              .secondary,
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: const Text('No'),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        MaterialButton(
+                                          color: Theme.of(ctx).primaryColor,
+                                          onPressed: () {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              snackBarUtils(
+                                                context,
+                                                'Logout successfull',
+                                                Icons.check_circle_rounded,
+                                                CustomColors.success,
+                                              ),
+                                            );
+                                            Navigator.of(context)
+                                                .pushReplacementNamed(
+                                                    LoginScreen.routeName);
+                                          },
+                                          child: const Text(
+                                            'Yes',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ));
+                        ;
                       },
                       icon: Icon(
-                        Icons.logout_rounded,
+                        Icons.logout_sharp,
                         color: Theme.of(context).primaryColor,
                         size: 30,
                       ),
@@ -92,7 +141,7 @@ class HomeScreen extends StatelessWidget {
           child: FloatingActionButton(
             backgroundColor: Theme.of(context).primaryColor,
             onPressed: () {
-              Navigator.of(context).pushNamed(CameraScreen.routeName);
+              Navigator.of(context).pushNamed(OrientationScreen.routeName);
             },
             child: Icon(
               Icons.camera_enhance_rounded,

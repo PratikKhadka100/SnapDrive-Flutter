@@ -3,6 +3,8 @@ import 'package:form_validator/form_validator.dart';
 
 import './register_screen.dart';
 import './home_screen.dart';
+import '../utils/snackbar_utils.dart';
+import '../utils/custom_colors.dart';
 
 class LoginScreen extends StatefulWidget {
   static const routeName = '/login-screen';
@@ -109,6 +111,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 26.0),
                     child: InkWell(
                       onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          snackBarUtils(
+                            context,
+                            'Login successfull',
+                            Icons.check_circle_rounded,
+                            CustomColors.success,
+                          ),
+                        );
                         Navigator.of(context).pushReplacementNamed(
                           HomeScreen.routeName,
                         );

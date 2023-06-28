@@ -1,10 +1,10 @@
 back
-backRight
-driverSeat
+back-right
+driverseat
 front
-frontLeft
+front-left
 left
-leftBack
+back-left
 right
-rightFront
-speedometer
+front-right
+dashboard

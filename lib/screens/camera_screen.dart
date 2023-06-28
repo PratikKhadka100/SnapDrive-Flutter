@@ -8,9 +8,10 @@ import 'package:tflite/tflite.dart';
 import '../screens/home_screen.dart';
 import '../screens/splash_screen.dart';
 import './orientation_screen.dart';
-// import '../widgets/prediction_item_widget.dart';
 import '../widgets/progress_indicator_widget.dart';
 import '../widgets/prediction_box_widget.dart';
+import '../utils/dialog_utils.dart';
+import '../utils/custom_colors.dart';
 
 class CameraScreen extends StatefulWidget {
   static const routeName = '/camera-screen';
@@ -40,6 +41,10 @@ class _CameraScreenState extends State<CameraScreen> {
   void initState() {
     super.initState();
 
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom],
+    );
     loadCamera();
     loadModel();
   }
@@ -47,6 +52,11 @@ class _CameraScreenState extends State<CameraScreen> {
   @override
   void dispose() {
     super.dispose();
+
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
     controller.dispose();
     Tflite.close();
   }
@@ -75,59 +85,28 @@ class _CameraScreenState extends State<CameraScreen> {
         switch (e.code) {
           case 'CameraAccessDenied':
             // Handle access errors here.
-            showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Camera Access Denied'),
-                content: const Text(
-                  'Please allow camera access in the device settings.',
+            DialogUtils.showDialogHandler(
+              context,
+              const Text('Camera Access Denied'),
+              const Text('Please allow camera access in the device settings.'),
+              () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const HomeScreen(),
                 ),
-                actions: [
-                  MaterialButton(
-                    color: Theme.of(ctx).primaryColor,
-                    onPressed: () => Navigator.of(ctx).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (ctx) => const HomeScreen(),
-                      ),
-                    ),
-                    child: const Text(
-                      'Ok',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             );
             break;
           default:
-            // Handle other errors here.
-            showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Error!'),
-                content: const Text(
-                  'An error occurred while initializing the camera.',
+            DialogUtils.showDialogHandler(
+              context,
+              const Text('Error!'),
+              const Text(
+                'An error occurred while initializing the camera.',
+              ),
+              () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const SplashScreen(),
                 ),
-                actions: [
-                  MaterialButton(
-                    color: Theme.of(ctx).primaryColor,
-                    onPressed: () => Navigator.of(ctx).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (ctx) => const SplashScreen(),
-                      ),
-                    ),
-                    child: const Text(
-                      'Ok',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             );
             break;
@@ -179,13 +158,9 @@ class _CameraScreenState extends State<CameraScreen> {
           predictedLabel = prediction[0]['detectedClass'];
 
           if (predictedLabel == 'car') {
-            setState(() {
-              isCar = true;
-            });
+            isCar = true;
           } else {
-            setState(() {
-              isCar = false;
-            });
+            isCar = false;
           }
           // predictedConfidence =
           //     ((prediction[0]['confidenceInClass'] * 100 as double)
@@ -227,6 +202,11 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void stopModel() {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
+
     isModalRunning = true;
     controller.stopImageStream();
   }
@@ -259,6 +239,17 @@ class _CameraScreenState extends State<CameraScreen> {
           appBar: AppBar(
             backgroundColor: Colors.black,
             elevation: 0,
+            title: isCar
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const <Widget>[
+                      Text('Car Detected!'),
+                      SizedBox(width: 6),
+                      Icon(Icons.car_repair_outlined),
+                    ],
+                  )
+                : Container(),
+            centerTitle: true,
           ),
           body: !controller.value.isInitialized
               ? const ProgressIndicatorWidget()
@@ -270,7 +261,7 @@ class _CameraScreenState extends State<CameraScreen> {
                         height: MediaQuery.of(context).size.height * 0.75,
                         width: MediaQuery.of(context).size.width,
                         child: AspectRatio(
-                          aspectRatio: controller.value.aspectRatio,
+                          aspectRatio: 1 / controller.value.aspectRatio,
                           child: CameraPreview(
                             controller,
                             child: PredictionBoxWidget(
@@ -297,39 +288,40 @@ class _CameraScreenState extends State<CameraScreen> {
                     ),
                     Expanded(
                       child: Container(
-                        width: double.infinity,
-                        color: Colors.black,
-                        child: isCar
-                            ? IconButton(
-                                onPressed: () {
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return const ProgressIndicatorWidget();
-                                      });
-                                  stopModel();
-                                  Future.delayed(const Duration(seconds: 5),
-                                      () {
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => OrientationScreen(
-                                          cameras: widget.cameras,
-                                          controller: controller,
-                                          cameraImage: cameraImage,
-                                        ),
-                                      ),
-                                    );
-                                  });
-                                },
-                                icon: const Icon(
-                                  Icons.arrow_circle_right_rounded,
-                                  color: Colors.white,
-                                  size: 55,
-                                ),
-                              )
-                            : Container(),
-                      ),
+                          width: double.infinity,
+                          color: Colors.black,
+                          child: IconButton(
+                            onPressed: isCar
+                                ? () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return const ProgressIndicatorWidget();
+                                        });
+                                    stopModel();
+                                    Future.delayed(const Duration(seconds: 5),
+                                        () {
+                                      // Navigator.pushReplacement(
+                                      //   context,
+                                      //   MaterialPageRoute(
+                                      //     builder: (context) => OrientationScreen(
+                                      //       cameras: widget.cameras,
+                                      //       // controller: controller,
+                                      //       // cameraImage: cameraImage,
+                                      //     ),
+                                      //   ),
+                                      // );
+                                    });
+                                  }
+                                : null,
+                            icon: Icon(
+                              Icons.arrow_circle_right_rounded,
+                              color: isCar
+                                  ? CustomColors.success
+                                  : CustomColors.danger,
+                              size: 55,
+                            ),
+                          )),
                     ),
                   ],
                 ),

@@ -1,5 +1,3 @@
-// import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
@@ -7,21 +5,19 @@ import 'package:tflite/tflite.dart';
 
 import '../screens/home_screen.dart';
 import '../screens/splash_screen.dart';
-// import '../widgets/prediction_item_widget.dart';
 import '../widgets/progress_indicator_widget.dart';
-// import '../widgets/prediction_box_widget.dart';
+import '../widgets/orientation_prediction_widget.dart';
+import '../utils/dialog_utils.dart';
+import '../utils/snackbar_utils.dart';
+import '../utils/custom_colors.dart';
 
 class OrientationScreen extends StatefulWidget {
   static const routeName = '/orientation-screen';
 
   final List<CameraDescription> cameras;
-  late CameraController controller;
-  CameraImage? cameraImage;
 
-  OrientationScreen({
+  const OrientationScreen({
     required this.cameras,
-    required this.controller,
-    required this.cameraImage,
     super.key,
   });
 
@@ -30,47 +26,72 @@ class OrientationScreen extends StatefulWidget {
 }
 
 class _OrientationScreenState extends State<OrientationScreen> {
-  // late CameraController controller;
-  // CameraImage? cameraImage;
+  late CameraController controller;
+  CameraImage? cameraImage;
+
   var predictedLabel = '';
   var predictedConfidence = '';
   Rect? detectedObjectRect;
 
   List<dynamic> predictionList = [];
+  List<Uint8List> imgList = [];
 
   var isModalRunning = false;
+
+  final orientationLabels = [
+    'front',
+    'front-right',
+    'right',
+    'back-right',
+    'back',
+    'back-left',
+    'left',
+    'front-left',
+    'driverseat',
+    'dashboard'
+  ];
+
+  var count = 0;
 
   @override
   void initState() {
     super.initState();
 
-    loadCamera();
-    loadModel();
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom],
+    );
+    _loadCamera();
+    _loadModel();
   }
 
   @override
   void dispose() {
     super.dispose();
-    widget.controller.dispose();
+
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
+    controller.dispose();
     Tflite.close();
   }
 
-  void loadCamera() {
-    widget.controller = CameraController(
+  void _loadCamera() {
+    controller = CameraController(
       widget.cameras[0],
       ResolutionPreset.max,
-      // imageFormatGroup: ImageFormatGroup.yuv420,
     );
-    widget.controller.initialize().then((_) {
+    controller.initialize().then((_) {
       if (!mounted) {
         return;
       }
 
       setState(() {
-        widget.controller.startImageStream(
+        controller.startImageStream(
           (imageStream) {
-            widget.cameraImage = imageStream;
-            runModel();
+            cameraImage = imageStream;
+            _runModel();
           },
         );
       });
@@ -79,59 +100,28 @@ class _OrientationScreenState extends State<OrientationScreen> {
         switch (e.code) {
           case 'CameraAccessDenied':
             // Handle access errors here.
-            showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Camera Access Denied'),
-                content: const Text(
-                  'Please allow camera access in the device settings.',
+            DialogUtils.showDialogHandler(
+              context,
+              const Text('Camera Access Denied'),
+              const Text('Please allow camera access in the device settings.'),
+              () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const HomeScreen(),
                 ),
-                actions: [
-                  MaterialButton(
-                    color: Theme.of(ctx).primaryColor,
-                    onPressed: () => Navigator.of(ctx).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (ctx) => const HomeScreen(),
-                      ),
-                    ),
-                    child: const Text(
-                      'Ok',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             );
             break;
           default:
-            // Handle other errors here.
-            showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: const Text('Error!'),
-                content: const Text(
-                  'An error occurred while initializing the camera.',
+            DialogUtils.showDialogHandler(
+              context,
+              const Text('Error!'),
+              const Text(
+                'An error occurred while initializing the camera.',
+              ),
+              () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const SplashScreen(),
                 ),
-                actions: [
-                  MaterialButton(
-                    color: Theme.of(ctx).primaryColor,
-                    onPressed: () => Navigator.of(ctx).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (ctx) => const SplashScreen(),
-                      ),
-                    ),
-                    child: const Text(
-                      'Ok',
-                      style: TextStyle(
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             );
             break;
@@ -140,37 +130,30 @@ class _OrientationScreenState extends State<OrientationScreen> {
     });
   }
 
-  void runModel() {
+  void _runModel() async {
     if (isModalRunning) {
       return;
     }
 
     isModalRunning = true;
 
-    if (widget.cameraImage != null) {
+    if (cameraImage != null) {
       Tflite.runModelOnFrame(
-        // Tflite.detectObjectOnFrame(
-        bytesList: widget.cameraImage!.planes
+        bytesList: cameraImage!.planes
             .map(
               (e) => e.bytes,
             )
             .toList(),
-        // model: 'SSDMobileNet',
-        imageHeight: widget.cameraImage!.height,
-        imageWidth: widget.cameraImage!.width,
-        // imageMean: 0.0,
-        // imageStd: 255.0,
-        // rotation: 90,
+        imageHeight: cameraImage!.height,
+        imageWidth: cameraImage!.width,
         numResults: 2,
         threshold: 0.2,
-        // asynch: true,
       ).then((prediction) {
         print('-------------------------');
         print(prediction);
         print('-------------------------');
-        // for (var predict in prediction!) {
+
         setState(() {
-          // predictedResult = predict['label'];
           if (prediction!.isEmpty) {
             predictedLabel = '';
             predictedConfidence = '';
@@ -178,36 +161,26 @@ class _OrientationScreenState extends State<OrientationScreen> {
             return;
           }
 
-          // predictionList = prediction;
+          predictionList = prediction;
 
           predictedLabel = prediction[0]['label'];
 
           predictedConfidence = ((prediction[0]['confidence'] * 100 as double)
               .toStringAsFixed(0)
               .toString());
-          // detectedObjectRect = Rect.fromLTRB(
-          //   prediction[0]['rect']['x'] * controller.value.previewSize!.width,
-          //   prediction[0]['rect']['y'] * controller.value.previewSize!.height,
-          //   (prediction[0]['rect']['x'] + prediction[0]['rect']['w']) *
-          //       controller.value.previewSize!.width,
-          //   (prediction[0]['rect']['y'] + prediction[0]['rect']['h']) *
-          //       controller.value.previewSize!.height,
-          // );
         });
-        // }
+
         isModalRunning = false;
       });
     }
   }
 
-  void loadModel() async {
+  void _loadModel() async {
     Tflite.close();
     try {
       await Tflite.loadModel(
-        model: 'assets/orientation.tflite',
+        model: 'assets/model_unquant.tflite',
         labels: 'assets/orientation.txt',
-        // model: 'assets/ssd_mobilenet.tflite',
-        // labels: 'assets/ssd_mobilenet.txt',
       );
     } on PlatformException {
       showDialog(
@@ -220,15 +193,39 @@ class _OrientationScreenState extends State<OrientationScreen> {
     }
   }
 
-  void stopModel() {
+  void _stopModel() {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
+
     isModalRunning = true;
-    widget.controller.stopImageStream();
+    controller.stopImageStream();
+  }
+
+  void _clickImageHandler() {
+    if (count < orientationLabels.length - 1) {
+      setState(() {
+        count = count + 1;
+      });
+    } else {
+      _stopModel();
+      ScaffoldMessenger.of(context).showSnackBar(
+        snackBarUtils(
+          context,
+          'Snap-tastic! You\'ve captured it all!',
+          Icons.check_circle_rounded,
+          CustomColors.success,
+        ),
+      );
+      Future.delayed(const Duration(seconds: 3), () {
+        Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    Size screen = MediaQuery.of(context).size;
-
     return WillPopScope(
       onWillPop: () {
         showDialog(
@@ -236,7 +233,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
             builder: (context) {
               return const ProgressIndicatorWidget();
             });
-        stopModel();
+        _stopModel();
         Future.delayed(const Duration(seconds: 3), () {
           Navigator.pushReplacement(
             context,
@@ -253,8 +250,24 @@ class _OrientationScreenState extends State<OrientationScreen> {
           appBar: AppBar(
             backgroundColor: Colors.black,
             elevation: 0,
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                FittedBox(
+                  child: Text(
+                    'Capture ${orientationLabels[count].toUpperCase()} View',
+                    style: const TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(Icons.camera_alt_outlined),
+              ],
+            ),
+            centerTitle: true,
           ),
-          body: !widget.controller.value.isInitialized
+          body: !controller.value.isInitialized
               ? const ProgressIndicatorWidget()
               : Column(
                   children: [
@@ -264,39 +277,23 @@ class _OrientationScreenState extends State<OrientationScreen> {
                         height: MediaQuery.of(context).size.height * 0.75,
                         width: MediaQuery.of(context).size.width,
                         child: AspectRatio(
-                          aspectRatio: widget.controller.value.aspectRatio,
+                          aspectRatio: 1 / controller.value.aspectRatio,
                           child: CameraPreview(
-                            widget.controller,
-                            child: Column(
-                              children: <Widget>[
-                                Text(
-                                  'View: $predictedLabel',
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                Text(
-                                  'Confidence: $predictedConfidence%',
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ],
+                            controller,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 5.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (predictionList.isNotEmpty)
+                                    OrientationPredictionWidget(
+                                      predictedLabel,
+                                      predictedConfidence,
+                                    ),
+                                ],
+                              ),
                             ),
-                            // child: PredictionBoxWidget(
-                            //   results: predictionList,
-                            //   previewH: math.max(
-                            //     controller.value.previewSize!.height,
-                            //     controller.value.previewSize!.width,
-                            //   ),
-                            //   previewW: math.min(
-                            //     controller.value.previewSize!.height,
-                            //     controller.value.previewSize!.width,
-                            //   ),
-                            //   screenH: screen.height * 0.75,
-                            //   screenW: screen.width,
-                            // ),
-                            // child: PredictionItemWidget(
-                            //   predictedLabel: predictedLabel,
-                            //   predictedConfidence: predictedConfidence,
-                            //   detectedObjectRect: detectedObjectRect,
-                            // ),
                           ),
                         ),
                       ),
@@ -305,14 +302,23 @@ class _OrientationScreenState extends State<OrientationScreen> {
                       child: Container(
                         width: double.infinity,
                         color: Colors.black,
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.camera,
-                            color: Colors.white,
-                            size: 65,
-                          ),
-                        ),
+                        child: orientationLabels[count] == predictedLabel
+                            ? IconButton(
+                                onPressed: _clickImageHandler,
+                                icon: const Icon(
+                                  Icons.camera,
+                                  color: CustomColors.success,
+                                  size: 65,
+                                ),
+                              )
+                            : const IconButton(
+                                onPressed: null,
+                                icon: Icon(
+                                  Icons.camera,
+                                  color: CustomColors.danger,
+                                  size: 65,
+                                ),
+                              ),
                       ),
                     ),
                   ],
