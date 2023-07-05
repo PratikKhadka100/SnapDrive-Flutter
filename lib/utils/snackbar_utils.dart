@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 SnackBar snackBarUtils(
-    BuildContext context, String title, IconData icon, Color color) {
+    BuildContext context, String? title, IconData icon, Color color) {
   return SnackBar(
     content: Container(
       padding: const EdgeInsets.all(8.0),
       height: 50,
       width: double.infinity,
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).canvasColor,
           borderRadius: BorderRadius.circular(4),
           boxShadow: [
             BoxShadow(
@@ -28,7 +28,7 @@ SnackBar snackBarUtils(
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              title,
+              title!,
               style: const TextStyle(
                 color: Colors.black,
                 fontSize: 16,

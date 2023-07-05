@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import './login_screen.dart';
+import './home_screen.dart';
+import '../utils/snackbar_utils.dart';
+import '../utils/custom_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,15 +14,38 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  String? userEmail;
   @override
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacementNamed(
-        LoginScreen.routeName,
-      );
-    });
+    SharedPreferences.getInstance().then(
+      (value) {
+        userEmail = value.getString('user') ?? '';
+
+        if (userEmail!.isNotEmpty) {
+          Future.delayed(const Duration(seconds: 3), () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              snackBarUtils(
+                context,
+                'Logged in as $userEmail',
+                Icons.check_circle_rounded,
+                CustomColors.success,
+              ),
+            );
+            Navigator.of(context).pushReplacementNamed(
+              HomeScreen.routeName,
+            );
+          });
+        } else {
+          Future.delayed(const Duration(seconds: 3), () {
+            Navigator.of(context).pushReplacementNamed(
+              LoginScreen.routeName,
+            );
+          });
+        }
+      },
+    );
   }
 
   @override

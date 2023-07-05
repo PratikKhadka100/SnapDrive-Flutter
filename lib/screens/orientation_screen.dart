@@ -1,10 +1,15 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:tflite/tflite.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
-import '../screens/home_screen.dart';
-import '../screens/splash_screen.dart';
+import './home_screen.dart';
+import './splash_screen.dart';
+import './add_vehicle_screen.dart';
 import '../widgets/progress_indicator_widget.dart';
 import '../widgets/orientation_prediction_widget.dart';
 import '../utils/dialog_utils.dart';
@@ -34,7 +39,9 @@ class _OrientationScreenState extends State<OrientationScreen> {
   Rect? detectedObjectRect;
 
   List<dynamic> predictionList = [];
-  List<Uint8List> imgList = [];
+  // List<Uint8List> imgList = [];
+  // List<File> allFileList = [];
+  List<String> base64ImgList = [];
 
   var isModalRunning = false;
 
@@ -51,7 +58,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
     'dashboard'
   ];
 
-  var count = 0;
+  var count = 9;
 
   @override
   void initState() {
@@ -59,10 +66,10 @@ class _OrientationScreenState extends State<OrientationScreen> {
 
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
-      overlays: [SystemUiOverlay.bottom],
+      overlays: [],
     );
     _loadCamera();
-    _loadModel();
+    // _loadModel();
   }
 
   @override
@@ -88,12 +95,12 @@ class _OrientationScreenState extends State<OrientationScreen> {
       }
 
       setState(() {
-        controller.startImageStream(
-          (imageStream) {
-            cameraImage = imageStream;
-            _runModel();
-          },
-        );
+        // controller.startImageStream(
+        //   (imageStream) {
+        //     cameraImage = imageStream;
+        //     _runModel();
+        //   },
+        // );
       });
     }).catchError((Object e) {
       if (e is CameraException) {
@@ -179,7 +186,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
     Tflite.close();
     try {
       await Tflite.loadModel(
-        model: 'assets/model_unquant.tflite',
+        model: 'assets/model_unquant1.tflite',
         labels: 'assets/orientation.txt',
       );
     } on PlatformException {
@@ -203,13 +210,62 @@ class _OrientationScreenState extends State<OrientationScreen> {
     controller.stopImageStream();
   }
 
+  void _takeCarPicture() {
+    if (controller.value.isTakingPicture) {
+      // A capture is already pending, do nothing.
+      return;
+    }
+    try {
+      controller.takePicture().then((file) {
+        // print(file.path);
+        XFile rawImage = file;
+        File imageFile = File(rawImage.path);
+
+        imageFile.readAsBytes().then((bytes) {
+          Uint8List imageBytes = bytes;
+          var base64EncodedImg = base64Encode(imageBytes);
+          // log(base64EncodedImg);
+          base64ImgList.add(base64EncodedImg);
+        });
+
+        // GallerySaver.saveImage(
+        //   rawImage.path,
+        //   albumName: 'Cars',
+        // );
+
+        // setState(() {
+        //   controller.startImageStream(
+        //     (imageStream) {
+        //       cameraImage = imageStream;
+        //       _runModel();
+        //     },
+        //   );
+        // });
+      });
+    } on CameraException catch (e) {
+      print('Error occured while capturing image $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        snackBarUtils(
+          context,
+          e.description,
+          Icons.close_outlined,
+          CustomColors.danger,
+        ),
+      );
+    }
+  }
+
   void _clickImageHandler() {
+    // isModalRunning = true;
+    // controller.stopImageStream();
+
     if (count < orientationLabels.length - 1) {
       setState(() {
         count = count + 1;
       });
     } else {
-      _stopModel();
+      // _stopModel();
+
       ScaffoldMessenger.of(context).showSnackBar(
         snackBarUtils(
           context,
@@ -219,7 +275,10 @@ class _OrientationScreenState extends State<OrientationScreen> {
         ),
       );
       Future.delayed(const Duration(seconds: 3), () {
-        Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
+        Navigator.of(context).pushReplacementNamed(
+          AddVehicleScreen.routeName,
+          arguments: base64ImgList,
+        );
       });
     }
   }
@@ -233,7 +292,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
             builder: (context) {
               return const ProgressIndicatorWidget();
             });
-        _stopModel();
+        // _stopModel();
         Future.delayed(const Duration(seconds: 3), () {
           Navigator.pushReplacement(
             context,
@@ -250,20 +309,23 @@ class _OrientationScreenState extends State<OrientationScreen> {
           appBar: AppBar(
             backgroundColor: Colors.black,
             elevation: 0,
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                FittedBox(
-                  child: Text(
-                    'Capture ${orientationLabels[count].toUpperCase()} View',
-                    style: const TextStyle(
-                      fontSize: 18,
+            title: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  FittedBox(
+                    child: Text(
+                      'Capture ${orientationLabels[count].toUpperCase()} View',
+                      style: const TextStyle(
+                        fontSize: 18,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 6),
-                const Icon(Icons.camera_alt_outlined),
-              ],
+                  const SizedBox(width: 6),
+                  const Icon(Icons.camera_alt_outlined),
+                ],
+              ),
             ),
             centerTitle: true,
           ),
@@ -300,26 +362,24 @@ class _OrientationScreenState extends State<OrientationScreen> {
                     ),
                     Expanded(
                       child: Container(
-                        width: double.infinity,
-                        color: Colors.black,
-                        child: orientationLabels[count] == predictedLabel
-                            ? IconButton(
-                                onPressed: _clickImageHandler,
-                                icon: const Icon(
-                                  Icons.camera,
-                                  color: CustomColors.success,
-                                  size: 65,
-                                ),
-                              )
-                            : const IconButton(
-                                onPressed: null,
-                                icon: Icon(
-                                  Icons.camera,
-                                  color: CustomColors.danger,
-                                  size: 65,
-                                ),
-                              ),
-                      ),
+                          width: double.infinity,
+                          color: Colors.black,
+                          child: IconButton(
+                            onPressed:
+                                orientationLabels[count] != predictedLabel
+                                    ? () {
+                                        _clickImageHandler();
+                                        _takeCarPicture();
+                                      }
+                                    : null,
+                            icon: Icon(
+                              Icons.camera,
+                              color: orientationLabels[count] == predictedLabel
+                                  ? CustomColors.success
+                                  : CustomColors.danger,
+                              size: 65,
+                            ),
+                          )),
                     ),
                   ],
                 ),

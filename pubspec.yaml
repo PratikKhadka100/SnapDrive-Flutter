@@ -39,8 +39,11 @@ dependencies:
   tflite: ^1.1.2
   intl: ^0.18.1
   form_validator: ^2.1.1
-  matrix2d: ^1.0.4
+  # matrix2d: ^1.0.4
   image: ^4.0.17
+  gallery_saver: ^2.3.2
+  http: ^0.13.5
+  shared_preferences: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +75,7 @@ flutter:
     - assets/orientation.tflite
     - assets/orientation.txt
     - assets/model_unquant.tflite
+    - assets/model_unquant1.tflite
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

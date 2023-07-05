@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:form_validator/form_validator.dart';
 
 import './register_screen.dart';
-import './home_screen.dart';
-import '../utils/snackbar_utils.dart';
-import '../utils/custom_colors.dart';
+
+import '../models/login.dart';
+import '../api/api_services.dart';
+import '../widgets/progress_indicator_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   static const routeName = '/login-screen';
@@ -18,11 +19,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final emailValidate =
-      ValidationBuilder().required('Required').email('Invalid Email').build();
+  final emailValidate = ValidationBuilder()
+      .required('Email field is required')
+      .email('Invalid Email')
+      .build();
   final passwordValidate = ValidationBuilder()
       .minLength(8, 'Password must be at least 8 characters')
-      .required('Required')
+      .required('Password field is required')
       .build();
 
   final emailController = TextEditingController();
@@ -30,6 +33,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    void userLoginHandler() {
+      var loginUserObject = Login(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+      Map<String, dynamic> loginUserMap = loginUserObject.toMap();
+
+      APIServices.validateUser(
+        context,
+        loginUserMap,
+        emailController.text.toString().trim(),
+      );
+    }
+
     final outlineInputBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
       borderSide: BorderSide.none,
@@ -111,17 +128,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 26.0),
                     child: InkWell(
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          snackBarUtils(
-                            context,
-                            'Login successfull',
-                            Icons.check_circle_rounded,
-                            CustomColors.success,
-                          ),
-                        );
-                        Navigator.of(context).pushReplacementNamed(
-                          HomeScreen.routeName,
-                        );
+                        if (_formKey.currentState!.validate()) {
+                          showDialog(
+                              context: context,
+                              builder: (_) {
+                                return const ProgressIndicatorWidget();
+                              });
+                          userLoginHandler();
+                        }
                       },
                       borderRadius: BorderRadius.circular(8),
                       overlayColor: MaterialStateProperty.all(Colors.blue),

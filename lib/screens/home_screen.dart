@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import './login_screen.dart';
 import './camera_screen.dart';
@@ -11,6 +12,11 @@ class HomeScreen extends StatelessWidget {
   static const routeName = '/home-screen';
 
   const HomeScreen({super.key});
+
+  void _removeUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('user');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +66,8 @@ class HomeScreen extends StatelessWidget {
                                         MaterialButton(
                                           color: Theme.of(ctx).primaryColor,
                                           onPressed: () {
+                                            _removeUser();
+                                            Navigator.of(context).pop();
                                             ScaffoldMessenger.of(context)
                                                 .showSnackBar(
                                               snackBarUtils(
@@ -71,7 +79,8 @@ class HomeScreen extends StatelessWidget {
                                             );
                                             Navigator.of(context)
                                                 .pushReplacementNamed(
-                                                    LoginScreen.routeName);
+                                              LoginScreen.routeName,
+                                            );
                                           },
                                           child: const Text(
                                             'Yes',

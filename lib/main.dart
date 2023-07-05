@@ -3,11 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 
 import './screens/splash_screen.dart';
+import './screens/login_screen.dart';
+import './screens/register_screen.dart';
 import './screens/home_screen.dart';
 import './screens/camera_screen.dart';
 import './screens/orientation_screen.dart';
-import './screens/login_screen.dart';
-import './screens/register_screen.dart';
+import './screens/add_vehicle_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +50,8 @@ class MyApp extends StatelessWidget {
         HomeScreen.routeName: (ctx) => const HomeScreen(),
         // CameraScreen.routeName: (ctx) => CameraScreen(cameras: cameras),
         OrientationScreen.routeName: (ctx) =>
-            OrientationScreen(cameras: cameras)
+            OrientationScreen(cameras: cameras),
+        AddVehicleScreen.routeName: (ctx) => const AddVehicleScreen(),
       },
     );
   }
