@@ -65,7 +65,6 @@ class _CameraScreenState extends State<CameraScreen> {
     controller = CameraController(
       widget.cameras[0],
       ResolutionPreset.max,
-      // imageFormatGroup: ImageFormatGroup.yuv420,
     );
     controller.initialize().then((_) {
       if (!mounted) {
@@ -123,7 +122,6 @@ class _CameraScreenState extends State<CameraScreen> {
     isModalRunning = true;
 
     if (cameraImage != null) {
-      // Tflite.runModelOnFrame(
       Tflite.detectObjectOnFrame(
         bytesList: cameraImage!.planes
             .map(
@@ -133,19 +131,13 @@ class _CameraScreenState extends State<CameraScreen> {
         model: 'SSDMobileNet',
         imageHeight: cameraImage!.height,
         imageWidth: cameraImage!.width,
-        // imageMean: 0.0,
-        // imageStd: 255.0,
-        // rotation: 90,
-        // numResults: 2,
         threshold: 0.5,
-        // asynch: true,
       ).then((prediction) {
         print('-------------------------');
         print(prediction);
         print('-------------------------');
-        // for (var predict in prediction!) {
+
         setState(() {
-          // predictedResult = predict['label'];
           if (prediction!.isEmpty) {
             predictedLabel = '';
             predictedConfidence = '';
@@ -162,20 +154,8 @@ class _CameraScreenState extends State<CameraScreen> {
           } else {
             isCar = false;
           }
-          // predictedConfidence =
-          //     ((prediction[0]['confidenceInClass'] * 100 as double)
-          //         .toStringAsFixed(0)
-          //         .toString());
-          // detectedObjectRect = Rect.fromLTRB(
-          //   prediction[0]['rect']['x'] * controller.value.previewSize!.width,
-          //   prediction[0]['rect']['y'] * controller.value.previewSize!.height,
-          //   (prediction[0]['rect']['x'] + prediction[0]['rect']['w']) *
-          //       controller.value.previewSize!.width,
-          //   (prediction[0]['rect']['y'] + prediction[0]['rect']['h']) *
-          //       controller.value.previewSize!.height,
-          // );
         });
-        // }
+
         isModalRunning = false;
       });
     }
@@ -185,8 +165,6 @@ class _CameraScreenState extends State<CameraScreen> {
     Tflite.close();
     try {
       await Tflite.loadModel(
-        // model: 'assets/orientation.tflite',
-        // labels: 'assets/orientation.txt',
         model: 'assets/ssd_mobilenet.tflite',
         labels: 'assets/ssd_mobilenet.txt',
       );
@@ -277,11 +255,6 @@ class _CameraScreenState extends State<CameraScreen> {
                               screenH: screen.height * 0.75,
                               screenW: screen.width,
                             ),
-                            // child: PredictionItemWidget(
-                            //   predictedLabel: predictedLabel,
-                            //   predictedConfidence: predictedConfidence,
-                            //   detectedObjectRect: detectedObjectRect,
-                            // ),
                           ),
                         ),
                       ),
@@ -301,16 +274,17 @@ class _CameraScreenState extends State<CameraScreen> {
                                     stopModel();
                                     Future.delayed(const Duration(seconds: 5),
                                         () {
-                                      // Navigator.pushReplacement(
-                                      //   context,
-                                      //   MaterialPageRoute(
-                                      //     builder: (context) => OrientationScreen(
-                                      //       cameras: widget.cameras,
-                                      //       // controller: controller,
-                                      //       // cameraImage: cameraImage,
-                                      //     ),
-                                      //   ),
-                                      // );
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              OrientationScreen(
+                                            cameras: widget.cameras,
+                                            // controller: controller,
+                                            // cameraImage: cameraImage,
+                                          ),
+                                        ),
+                                      );
                                     });
                                   }
                                 : null,
@@ -319,7 +293,7 @@ class _CameraScreenState extends State<CameraScreen> {
                               color: isCar
                                   ? CustomColors.success
                                   : CustomColors.danger,
-                              size: 55,
+                              size: 65,
                             ),
                           )),
                     ),

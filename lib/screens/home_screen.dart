@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import './login_screen.dart';
 import './camera_screen.dart';
-import './orientation_screen.dart';
+// import './orientation_screen.dart';
 import '../utils/snackbar_utils.dart';
 import '../utils/custom_colors.dart';
 
@@ -150,7 +150,7 @@ class HomeScreen extends StatelessWidget {
           child: FloatingActionButton(
             backgroundColor: Theme.of(context).primaryColor,
             onPressed: () {
-              Navigator.of(context).pushNamed(OrientationScreen.routeName);
+              Navigator.of(context).pushNamed(CameraScreen.routeName);
             },
             child: Icon(
               Icons.camera_enhance_rounded,

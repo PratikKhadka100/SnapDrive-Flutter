@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:form_validator/form_validator.dart';
 
 import './home_screen.dart';
 import '../models/vehicle.dart';
 import '../api/api_services.dart';
+import '../widgets/progress_indicator_widget.dart';
 
 class AddVehicleScreen extends StatefulWidget {
   static const routeName = '/add-vehicle';
@@ -64,7 +67,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
 
       Map<String, dynamic> vehicleMap = vehicleObject.toMap();
 
-      APIServices.addVehicle(vehicleMap);
+      APIServices.addVehicle(context, vehicleMap);
     }
 
     final outlineInputBorder = OutlineInputBorder(
@@ -278,7 +281,7 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                       Expanded(
                         child: buildTextField(
                           TextInputType.number,
-                          'No. of Cylinders',
+                          'Cylinders',
                           null,
                           requiredValidate,
                           cylindersController,
@@ -302,6 +305,10 @@ class _AddVehicleScreenState extends State<AddVehicleScreen> {
                     child: InkWell(
                       onTap: () {
                         if (_formKey.currentState!.validate()) {
+                          showDialog(
+                            context: context,
+                            builder: (_) => const ProgressIndicatorWidget(),
+                          );
                           addVehicleHandler();
                         }
                       },

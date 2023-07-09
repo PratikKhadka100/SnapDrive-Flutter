@@ -7,7 +7,7 @@ import './screens/login_screen.dart';
 import './screens/register_screen.dart';
 import './screens/home_screen.dart';
 import './screens/camera_screen.dart';
-import './screens/orientation_screen.dart';
+// import './screens/orientation_screen.dart';
 import './screens/add_vehicle_screen.dart';
 
 Future<void> main() async {
@@ -48,9 +48,9 @@ class MyApp extends StatelessWidget {
         LoginScreen.routeName: (ctx) => const LoginScreen(),
         RegisterScreen.routeName: (ctx) => const RegisterScreen(),
         HomeScreen.routeName: (ctx) => const HomeScreen(),
-        // CameraScreen.routeName: (ctx) => CameraScreen(cameras: cameras),
-        OrientationScreen.routeName: (ctx) =>
-            OrientationScreen(cameras: cameras),
+        CameraScreen.routeName: (ctx) => CameraScreen(cameras: cameras),
+        // OrientationScreen.routeName: (ctx) =>
+        //     OrientationScreen(cameras: cameras),
         AddVehicleScreen.routeName: (ctx) => const AddVehicleScreen(),
       },
     );

@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:tflite/tflite.dart';
-import 'package:gallery_saver/gallery_saver.dart';
+// import 'package:gallery_saver/gallery_saver.dart';
+import 'package:image/image.dart' as img_lib;
 
 import './home_screen.dart';
 import './splash_screen.dart';
@@ -39,8 +40,6 @@ class _OrientationScreenState extends State<OrientationScreen> {
   Rect? detectedObjectRect;
 
   List<dynamic> predictionList = [];
-  // List<Uint8List> imgList = [];
-  // List<File> allFileList = [];
   List<String> base64ImgList = [];
 
   var isModalRunning = false;
@@ -58,7 +57,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
     'dashboard'
   ];
 
-  var count = 9;
+  var count = 8;
 
   @override
   void initState() {
@@ -69,7 +68,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
       overlays: [],
     );
     _loadCamera();
-    // _loadModel();
+    _loadModel();
   }
 
   @override
@@ -95,12 +94,12 @@ class _OrientationScreenState extends State<OrientationScreen> {
       }
 
       setState(() {
-        // controller.startImageStream(
-        //   (imageStream) {
-        //     cameraImage = imageStream;
-        //     _runModel();
-        //   },
-        // );
+        controller.startImageStream(
+          (imageStream) {
+            cameraImage = imageStream;
+            _runModel();
+          },
+        );
       });
     }).catchError((Object e) {
       if (e is CameraException) {
@@ -221,26 +220,38 @@ class _OrientationScreenState extends State<OrientationScreen> {
         XFile rawImage = file;
         File imageFile = File(rawImage.path);
 
-        imageFile.readAsBytes().then((bytes) {
-          Uint8List imageBytes = bytes;
-          var base64EncodedImg = base64Encode(imageBytes);
-          // log(base64EncodedImg);
-          base64ImgList.add(base64EncodedImg);
+        imageFile.readAsBytes().then(
+          (bytes) {
+            // Uint8List imageBytes = bytes;
+            img_lib.Image? decodedJpgImg = img_lib.decodeJpg(bytes);
+            img_lib.Image resizedJpgImg = img_lib.copyResize(
+              decodedJpgImg!,
+              width: decodedJpgImg.width,
+              height: (decodedJpgImg.width * 0.75).toInt(),
+            );
+            Uint8List imageBytes =
+                Uint8List.fromList(img_lib.encodeJpg(resizedJpgImg));
+            var base64EncodedImg = base64Encode(imageBytes);
+            base64ImgList.add(base64EncodedImg);
+            // var base64EncodedImg = base64Encode(imageBytes);
+            // // log(base64EncodedImg);
+            // base64ImgList.add(base64EncodedImg);
+          },
+        ).then((_) {
+          setState(() {
+            controller.startImageStream(
+              (imageStream) {
+                cameraImage = imageStream;
+                _runModel();
+              },
+            );
+          });
         });
 
         // GallerySaver.saveImage(
         //   rawImage.path,
         //   albumName: 'Cars',
         // );
-
-        // setState(() {
-        //   controller.startImageStream(
-        //     (imageStream) {
-        //       cameraImage = imageStream;
-        //       _runModel();
-        //     },
-        //   );
-        // });
       });
     } on CameraException catch (e) {
       print('Error occured while capturing image $e');
@@ -256,15 +267,15 @@ class _OrientationScreenState extends State<OrientationScreen> {
   }
 
   void _clickImageHandler() {
-    // isModalRunning = true;
-    // controller.stopImageStream();
+    isModalRunning = true;
+    controller.stopImageStream();
 
     if (count < orientationLabels.length - 1) {
       setState(() {
         count = count + 1;
       });
     } else {
-      // _stopModel();
+      _stopModel();
 
       ScaffoldMessenger.of(context).showSnackBar(
         snackBarUtils(
@@ -292,7 +303,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
             builder: (context) {
               return const ProgressIndicatorWidget();
             });
-        // _stopModel();
+        _stopModel();
         Future.delayed(const Duration(seconds: 3), () {
           Navigator.pushReplacement(
             context,
@@ -366,7 +377,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
                           color: Colors.black,
                           child: IconButton(
                             onPressed:
-                                orientationLabels[count] != predictedLabel
+                                orientationLabels[count] == predictedLabel
                                     ? () {
                                         _clickImageHandler();
                                         _takeCarPicture();
