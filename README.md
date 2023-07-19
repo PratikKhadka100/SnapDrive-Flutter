@@ -1,16 +1,51 @@
-# snap_drive
+# SnapDrive
 
-A new Flutter project.
+App to detect object, detect vehicle orientation and add vehicle data.
 
-## Getting Started
+## How to use
 
-This project is a starting point for a Flutter application.
+Step 1:
 
-A few resources to get you started if this is your first Flutter project:
+Clone this repo by using following command:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```
+git clone git@github.com:PratikKhadka100/SnapDrive-Flutter.git
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```
+
+Step 2:
+
+Go to the project root and exceute the following command:
+
+```
+flutter pub get
+
+```
+
+Step 3:
+
+Run the project using following command:
+
+```
+flutter run
+
+```
+
+## Packages and Tools used
+
+- Camera: https://pub.dev/packages/camera
+- Tflite: https://pub.dev/packages/tflite
+- Image: https://pub.dev/packages/image
+- HTTP: https://pub.dev/packages/http
+- Shared Preferences: https://pub.dev/packages/shared_preferences
+- Intl: https://pub.dev/packages/intl
+- Form Validator: https://pub.dev/packages/form_validator
+
+## Screenshots
+
+![](assets\screenshots\Login.png)
+![](assets\screenshots\Register.png)
+![](assets\screenshots\object detection.png)
+![](assets\screenshots\car detection.png)
+![](assets\screenshots\Add Vehicle Form 1.png)
+![](assets\screenshots\Add Vehicle Form 2.png)
