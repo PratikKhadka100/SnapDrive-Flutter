@@ -40,9 +40,23 @@ flutter run
 
 ## Screenshots
 
-![](assets/screenshots/Login.png)
-![](assets/screenshots/Register.png)
-![](assets/screenshots/object-detection.png)
-![](assets/screenshots/car-detection.png)
-![](assets/screenshots/Add-Vehicle-Form-1.png)
-![](assets/screenshots/Add-Vehicle-Form-2.png)
+<div style="display: grid; grid-template-columns: 1fr 1fr; row-gap: 50px;">
+  <div>
+    <img src="assets/screenshots/Login.png" height= "600" width= "300">
+  </div>
+  <div>
+    <img src="assets/screenshots/Register.png" height= "600" width= "300">
+  </div>
+  <div>
+    <img src="assets/screenshots/object-detection.png" height= "600" width= "300">
+  </div>
+  <div>
+    <img src="assets/screenshots/car-detection.png" height= "600" width= "300">
+  </div>
+  <div>
+    <img src="assets/screenshots/Add-Vehicle-Form-1.png" height= "600" width= "300">
+  </div>
+   <div>
+    <img src="assets/screenshots/Add-Vehicle-Form-2.png" height= "600" width= "300">
+  </div>
+</div>
