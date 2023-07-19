@@ -40,7 +40,7 @@ flutter run
 
 ## Screenshots
 
-![](assets\screenshots\Login.png)
+![alt](assets\screenshots\Login.png)
 ![](assets\screenshots\Register.png)
 ![](assets\screenshots\object-detection.png)
 ![](assets\screenshots\car-detection.png)
