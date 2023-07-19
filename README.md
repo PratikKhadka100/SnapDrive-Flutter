@@ -40,9 +40,9 @@ flutter run
 
 ## Screenshots
 
-![alt](assets\screenshots\Login.png)
-![](assets\screenshots\Register.png)
-![](assets\screenshots\object-detection.png)
-![](assets\screenshots\car-detection.png)
-![](assets\screenshots\Add-Vehicle-Form-1.png)
-![](assets\screenshots\Add-Vehicle-Form-2.png)
+![](assets/screenshots/Login.png)
+![](assets/screenshots/Register.png)
+![](assets/screenshots/object-detection.png)
+![](assets/screenshots/car-detection.png)
+![](assets/screenshots/Add-Vehicle-Form-1.png)
+![](assets/screenshots/Add-Vehicle-Form-2.png)
