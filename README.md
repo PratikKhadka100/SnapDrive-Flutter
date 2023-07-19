@@ -10,7 +10,6 @@ Clone this repo by using following command:
 
 ```
 git clone git@github.com:PratikKhadka100/SnapDrive-Flutter.git
-
 ```
 
 Step 2:
@@ -19,16 +18,14 @@ Go to the project root and exceute the following command:
 
 ```
 flutter pub get
-
 ```
 
 Step 3:
 
-Run the project using following command:
+Run the app using following command:
 
 ```
 flutter run
-
 ```
 
 ## Packages and Tools used
@@ -45,7 +42,7 @@ flutter run
 
 ![](assets\screenshots\Login.png)
 ![](assets\screenshots\Register.png)
-![](assets\screenshots\object detection.png)
-![](assets\screenshots\car detection.png)
-![](assets\screenshots\Add Vehicle Form 1.png)
-![](assets\screenshots\Add Vehicle Form 2.png)
+![](assets\screenshots\object-detection.png)
+![](assets\screenshots\car-detection.png)
+![](assets\screenshots\Add-Vehicle-Form-1.png)
+![](assets\screenshots\Add-Vehicle-Form-2.png)
