@@ -57,7 +57,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
     'dashboard'
   ];
 
-  var count = 8;
+  var count = 0;
 
   @override
   void initState() {
@@ -153,7 +153,7 @@ class _OrientationScreenState extends State<OrientationScreen> {
         imageHeight: cameraImage!.height,
         imageWidth: cameraImage!.width,
         numResults: 2,
-        threshold: 0.2,
+        threshold: 0.5,
       ).then((prediction) {
         print('-------------------------');
         print(prediction);

@@ -14,7 +14,7 @@ class APIServices {
   static Future<http.Response> validateUser(
       BuildContext context, Map<String, dynamic> map, String userEmail) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    const loginUrl = 'http://192.168.101.8:8000/api/login/';
+    const loginUrl = 'http://10.199.11.42:8000/api/login/';
     final response = await http.post(
       Uri.parse(loginUrl),
       headers: <String, String>{
@@ -58,7 +58,7 @@ class APIServices {
   // Register API
   static Future<http.Response> createNewUser(
       BuildContext context, Map<String, dynamic> map) async {
-    const registerUrl = 'http://192.168.101.8:8000/api/user/';
+    const registerUrl = 'http://10.199.11.42:8000/api/user/';
     final response = await http.post(
       Uri.parse(registerUrl),
       headers: <String, String>{
@@ -98,7 +98,7 @@ class APIServices {
   // Add Vehicle Data
   static Future<http.Response> addVehicle(
       BuildContext context, Map<String, dynamic> map) async {
-    const addVehicleUrl = 'http://192.168.101.8:8000/api/vehicle/';
+    const addVehicleUrl = 'http://10.199.11.42:8000/api/vehicle/';
     final response = await http.post(
       Uri.parse(addVehicleUrl),
       headers: <String, String>{
