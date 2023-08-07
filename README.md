@@ -28,6 +28,28 @@ Run the app using following command:
 flutter run
 ```
 
+Step 4:
+
+If following error occurs:
+ `A problem occurred evaluating project ':tflite'.`
+
+To get rid of this error you should change this on ~\tflite-1.1.2\android\build.gradle:
+
+```
+dependencies {
+    compile 'org.tensorflow:tensorflow-lite:+'
+    compile 'org.tensorflow:tensorflow-lite-gpu:+'
+}
+```
+to this:
+
+```
+dependencies {
+    implementation 'org.tensorflow:tensorflow-lite:+'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:+'
+}
+```
+
 ## Packages and Tools used
 
 - Camera: https://pub.dev/packages/camera
